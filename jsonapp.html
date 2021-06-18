@@ -1,0 +1,31 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+        <script src="covid.json"></script>
+        <style>
+          body {
+            margin: 20px;
+          }
+        </style>
+    </head>
+
+    <body>
+      <h1>COVID-19 data by country</h1>
+      <button onclick="makeList()" class="btn blue white-text">Go!</button>
+      <p id="mylist"></p>
+    </body>
+
+    <script>
+      function makeList() {
+        var pHandle = document.getElementById('mylist');
+        var myHTML = "<ul class='collection'>";
+        console.log(coviddata.data);
+        for (var i = 0; i < coviddata.data.length; i++) {
+          myHTML = myHTML + "<li class='collection-item'><b>" + coviddata.data[i].location + "</b> (" + coviddata.data[i].confirmed + ")</li>";
+        }
+        pHandle.innerHTML = myHTML + "</ul>";
+      }
+
+    </script>
+</html>
