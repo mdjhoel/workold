@@ -32,23 +32,20 @@
         <div class="card">
           <div class="card-content">
             <span class="card-title">Card Title</span>
-            <p>I am a very simple card. I am good at containing small bits of information.
-            I am convenient because I require little markup to use effectively.</p>
             <div id="list"></div>
           </div>
         </div>
       </div>
-
       <div class="col s12 m6">
         <div class="card">
           <div class="card-content">
             <span class="card-title">Card Title</span>
-            <div id="map" style="width:100%; height:65%;"></div>
+            <div id="map" style="width:100%; height:63%;"></div>
           </div>
         </div>
       </div>
 
-    </div>
+    </div> <!-- end row -->
 
   </body>
 
@@ -61,15 +58,29 @@
       })
       //console.log(response.data.data);
       pushData(response);
+      pushMap(response);
     })
 
-    var map = L.map('map').setView([45.07, -67.05], 13);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    function pushMap(response) {
+      // setview lat, lon and zoom
+      var map = L.map('map').setView([45.07, -67.05], 3);
 
-    L.marker([45.07, -67.05]).addTo(map)
-    .bindPopup('<h1>A pretty CSS3 popup.</h1> Easily customizable.')
-    .openPopup();
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+      //L.marker([45.07, -67.05]).addTo(map)
+      //.bindPopup('<h1>A pretty CSS3 popup.</h1> Easily customizable.')
+      //.openPopup();
+
+      var mydata = response.data.data; // create new var
+      for (var i=0;i<mydata.length;i++) {
+        myradius = mydata[i].confirmed / 20
+        popup = mydata[i].location + "<br>" + mydata[i].confirmed;
+        L.circle([mydata[i].latitude,mydata[i].longitude],{color:"red",radius:myradius})
+        .addTo(map).bindPopup(popup);
+      }
+
+    }
 
     function pushData(response) {
       var divHandle = document.getElementById('list');
