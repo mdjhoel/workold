@@ -1,0 +1,181 @@
+
+<html>
+
+  <head>
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <!-- JS for Axios -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+
+    <title>COVID Dashboard</title>
+  </head>
+
+  <body>
+    <nav>
+      <div class="nav-wrapper">
+        <a href="#" class="brand-logo">Logo</a>
+        <ul id="nav-mobile" class="right hide-on-med-and-down">
+          <li><a href="sass.html">Sass</a></li>
+          <li><a href="badges.html">Components</a></li>
+          <li><a href="collapsible.html">JavaScript</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="row">
+
+      <div class="col s12 m6">
+        <div class="card">
+          <div class="card-content">
+            <span class="card-title">Card Title</span>
+            <div id="list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col s12 m6">
+        <div class="card">
+          <div class="card-content">
+            <span class="card-title">Card Title</span>
+            <div id="map" style="width:100%; height:63%;"></div>
+          </div>
+        </div>
+      </div>
+
+    </div> <!-- end row -->
+
+    <div class="row">
+      <div class="col s12 m6">
+        <div class="card">
+          <div class="card-content">
+            <span class="card-title">Card Title</span>
+            <canvas id="bar-chart" width="800" height="450"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col s12 m6 l6">
+        <div class="card">
+          <div class="card-content">
+            <span class="card-title">Card Title</span>
+            <canvas id="pie-chart" width="800" height="450"></canvas>
+          </div>
+        </div>
+      </div>
+    </div> <!-- end row -->
+
+
+  </body>
+
+  <script>
+
+    axios.get("https://www.trackcorona.live/api/countries").then(response => {
+      //console.log(response);
+      response.data.data.sort(function(a,b) {
+        return b.confirmed - a.confirmed;
+      })
+      //console.log(response.data.data);
+      pushData(response);
+      pushMap(response);
+      pushChart(response);
+      pushPie(response);
+    })
+
+    function pushPie(response) {
+
+      var data = response.data.data; // shorten the variable name
+      var totconf = 0;
+      for (var i=3; i<data.length; i++) {
+        totconf = totconf + data[i].confirmed;
+      }
+
+      new Chart(document.getElementById("pie-chart"), {
+          type: 'pie',
+          data: {
+            labels: [data[0].location,data[1].location,data[2].location,"rest of world"],
+            datasets: [{
+              label: "confirmed COVID-19 cases",
+              backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9"],
+              data: [data[0].confirmed,data[1].confirmed,data[2].confirmed,totconf]
+            }]
+          },
+          options: {
+            title: {
+              display: true,
+              text: 'Confirmed COVID'
+            }
+          }
+      });
+    }
+
+    function pushChart(response) {
+      // Bar chart
+      var mydata = response.data.data;
+      var countries = [];
+      var confirmed = [];
+      for (var i = 0; i<10; i++) {
+        countries.push(mydata[i].location);
+        confirmed.push(mydata[i].confirmed);
+      }
+
+      new Chart(document.getElementById("bar-chart"), {
+          type: 'bar',
+          data: {
+            labels: countries,
+            datasets: [
+              {
+                label: "Confirmed COVID-19",
+                backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850",'#ccff99','#ff9900','#ff33cc'],
+                data: confirmed
+              }
+            ]
+          },
+          options: {
+            legend: { display: false },
+            title: {
+              display: true,
+              text: 'Realtime COVID-19 confirmed cases'
+            }
+          }
+      });
+    }
+
+    function pushMap(response) {
+      // setview lat, lon and zoom
+      var map = L.map('map').setView([45.07, -67.05], 3);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+      //L.marker([45.07, -67.05]).addTo(map)
+      //.bindPopup('<h1>A pretty CSS3 popup.</h1> Easily customizable.')
+      //.openPopup();
+
+      var mydata = response.data.data; // create new var
+      for (var i=0;i<mydata.length;i++) {
+        myradius = mydata[i].confirmed / 20
+        popup = mydata[i].location + "<br>" + mydata[i].confirmed;
+        L.circle([mydata[i].latitude,mydata[i].longitude],{color:"red",radius:myradius})
+        .addTo(map).bindPopup(popup);
+      }
+
+    }
+
+    function pushData(response) {
+      var divHandle = document.getElementById('list');
+      var myHTML = "<ul class='collection'>";
+      for (var i = 0; i< 10; i++) {
+        myHTML = myHTML + "<li class='collection-item'>" + response.data.data[i].location + "</li>";
+      }
+      myHTML = myHTML + "</ul>";
+      divHandle.innerHTML = myHTML;
+    }
+
+  </script>
+
+</html>
